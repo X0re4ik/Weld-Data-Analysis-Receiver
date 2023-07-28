@@ -110,9 +110,10 @@ class WeldingValues:
         self.date: int = date
         self.amperage: float = amperage
         self.gas_consumption: float = gas_consumption
+        self.welding_parameters = WeldingParameters(ID)
+        
         self.wire_consumption: float = self._calculate_wire_consumption()
         
-        self.welding_parameters = WeldingParameters(ID)
         
         
     
