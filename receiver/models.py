@@ -3,7 +3,7 @@ from sqlalchemy.orm import create_session
 from sqlalchemy.ext.declarative import declarative_base
 
 
-from Writer.configs import DB_URI
+from receiver.configs import DB_URI
  
 Base = declarative_base()
 engine = create_engine(DB_URI)
@@ -13,7 +13,7 @@ from sqlalchemy.orm import create_session
 session = create_session(bind=engine)
 
 
-def __merge(options, values):
+def merge(options, values):
     assert len(options) == len(values), f'length of the array "options" must equal the length of the array "values"'
     return dict(zip(options, values))
  
@@ -25,7 +25,7 @@ class Sensor(Base):
     def template():
         options = ["mac_address", "device_name", "location", "measurement_period", "begining_of_work_day", "end_of_working_day", "welding_wire_diameter_id", "weld_metal_id"]
         values = [None , None, None, 1, 6, 18, 1, 1]
-        return __merge(options, values)
+        return merge(options, values)
 
 class Worker(Base):
     __table__ = Table('worker', metadata, autoload=True)
@@ -48,13 +48,21 @@ class WeldMetal(Base):
 class Measurement(Base):
     __table__ = Table('measurement', metadata, autoload=True)
     
+    @staticmethod
+    def template():
+        return merge(
+            ["sensor_id", "utc_time", 
+             "amperage", "gas_consumption", "wire_consumption"],
+            [None, None, 0, 0, 0])
+    
+    
 class DailyReport(Base):
     __table__ = Table('daily_report', metadata, autoload=True)
     
     
     @staticmethod
     def template():
-        return __merge(
+        return merge(
             ["sensor_id", "date", 
              "average_amperage", "average_gas_consumption", "average_wire_consumption", 
              "expended_wire", "expended_gas", 
