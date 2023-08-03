@@ -23,6 +23,16 @@ def write_values():
         "success": True
     }
 
+from flask import Response
+@app.route('/test_write_values', methods=["POST"])
+def write_values():
+    print(request.is_json())
+    print(request.get_json())
+    
+    answer = json.dumps({
+        'state': 'ON'
+    })
+    return Response(answer, status=200)
 
 
 
