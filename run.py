@@ -9,7 +9,7 @@ from receiver.mqtt_manager.subscriber import MQTTSubscription
 from receiver.rw_device_manager import rw_device_manager
 
 
-class HTTPServerFastData(Process):
+class HTTPServerFastData():
     def run(self) -> None:
         app.run(
             host=os.environ["HOST"],
@@ -17,7 +17,7 @@ class HTTPServerFastData(Process):
             debug=(os.environ["DEBUG"] == '1'))
     
 
-class MQTTServerFastData(Process):
+class MQTTServerFastData():
     def run(self) -> None:
         
         def __callback(client, userdata, msg):
@@ -39,9 +39,9 @@ class MQTTServerFastData(Process):
     
 def _main():
     if os.environ["USING_PROTOCOL"] == 'http':
-        HTTPServerFastData().start()
+        HTTPServerFastData().run()
     else:
-        MQTTServerFastData().start()
+        MQTTServerFastData().run()
 
 
 load_dotenv(".env")
