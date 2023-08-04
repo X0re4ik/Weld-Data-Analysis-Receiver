@@ -1,5 +1,6 @@
 import json
 import os
+import socket
 
 from dotenv import load_dotenv    
 from multiprocessing import Process
@@ -12,7 +13,7 @@ from receiver.rw_device_manager import rw_device_manager
 class HTTPServerFastData():
     def run(self) -> None:
         app.run(
-            host=os.environ["HOST"],
+            host=os.environ["HOST"] or socket.gethostname(),
             port=int(os.environ["HTTP_PORT"]),
             debug=(os.environ["DEBUG"] == '1'))
     

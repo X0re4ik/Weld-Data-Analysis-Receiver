@@ -8,25 +8,28 @@ import logging
 app = Flask(__name__)
 
 import json
+import time
 
 @app.route('/write_values', methods=["POST"])
 def write_values():
-    if not request.is_json:
-        return {
-            "success": False
-        }
-
-    for i in json.loads(request.get_json()):
-        rw_device_manager.add(i)
-    
+    #request.authorization["username"]
+    data = json.loads(request.get_json())
+    ID = data["ID"]
+    measurements = data["measurements"]
+    now = time.time()
+    for measurement in measurements:
+        measurement.update({"ID": ID})
+        rw_device_manager.add(measurement)
+    end = time.time()
     return {
-        "success": True
+        "success": True,
+        "period": end - now
     }
 
 from flask import Response
 @app.route('/test_write_values', methods=["POST"])
-def write_values():
-    print(request.is_json())
+def test_write_values():
+    print(request.is_json)
     print(request.get_json())
     
     answer = json.dumps({
