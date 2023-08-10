@@ -30,7 +30,7 @@ class WeldingValueGenerator:
 class RWSensorSimulator:
     
     RECORDING_PERIOD = 1
-    MAXIMUM_NUMBER_OF_RECORDS = 20
+    MAXIMUM_NUMBER_OF_RECORDS = 50
     
     def __init__(self, mac_address, generator=WeldingValueGenerator(0.7)) -> None:
         self.__generator = generator
@@ -51,7 +51,12 @@ class RWSensorSimulator:
         self.__list_to_send_to_server.append(data)
     
     def _send_to_server(self, ip="localhost", http_port=None, mqtt_port=None, username=None, password=None):
-        data = json.dumps(self.__list_to_send_to_server)
+        data = json.dumps(
+            {
+                "ID": self.__mac_address,
+                "measurements": self.__list_to_send_to_server
+            }
+        )
         if http_port:
             http_url = f"http://{ip}:{http_port}/write_values"
             r = requests.post(http_url, json=data)
@@ -77,5 +82,6 @@ class RWSensorSimulator:
                     username=username, password=password)
                 
                 self.__list_to_send_to_server = []
+                print(f"{self.__mac_address} отправил данные")
             self._read_values_from_source()
             time.sleep(1)

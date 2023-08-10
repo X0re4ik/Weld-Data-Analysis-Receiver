@@ -36,56 +36,80 @@ class SensorDataController:
 
 from queue import Queue
 from multiprocessing import Process
+from typing import Dict, List
+
+import functools
+
+def _does_dict_match_pattern(pattern):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            dict_ = args[1]
+            for key in dict_.keys():
+                if not (key in pattern):
+                    raise RuntimeError(f"Словарь не соответсвует паттерну {pattern}. Неизвестный ключ: {key}")
+        return wrapper
+    return decorator
+
+from threading import Thread
 
 class RWDeviceManager:
     
+    DEVICE: Dict[str, SensorDataController] = dict()
     
-    DEVICE = dict()
+    QUEUE_OF_DATA_TO_BE_PROCESSED: Dict = Queue(maxsize=40)
+            
     
-    QUEUE_OF_DATA_TO_BE_PROCESSED = Queue(maxsize=30)
     
     
     def _process_element_from_queue(self):
         if self.__class__.QUEUE_OF_DATA_TO_BE_PROCESSED.empty(): return
         
-        current_value = self.__class__.QUEUE_OF_DATA_TO_BE_PROCESSED.get()
+        current_values = self.__class__.QUEUE_OF_DATA_TO_BE_PROCESSED.get()
         
-        def treatment(welding_values: WeldingValues):
-            self.__class__.DEVICE[welding_values.ID].send_to(welding_values)
+        def treatment(dict_: Dict):
+            ID              = dict_["ID"]
+            measurements    = dict_["measurements"]
             
-        proccess_1 = Process(target=treatment, kwargs={
-            "welding_values": current_value
-        }, daemon=True)
-        proccess_1.run()
-        
+            for measurement in measurements:
+                time: float        = measurement["time"]
+                amperage: float    = measurement["amperage"]
+                gas: float         = measurement["gas"]
+                
+                wv = WeldingValues(
+                    ID=ID, 
+                    date=time, 
+                    amperage=amperage,
+                    gas_consumption=gas)
+                
+                self.__class__.DEVICE[ID].send_to(wv)
+            
+        Thread(target=treatment, kwargs={
+            "dict_": current_values
+        }).start()
+    
+    
+    def add(self, dict_: Dict):
+        """_summary_
 
-    def add(self, data_in_dict_format):
+        Args:
+            list_ (List[Dict]): _description_
+        """
         
-        if self._does_data_match_pattern(data_in_dict_format):
-            ID = data_in_dict_format["ID"]
-            wv = WeldingValues(
-                ID=ID, 
-                date=data_in_dict_format["time"], 
-                amperage=data_in_dict_format["amperage"],
-                gas_consumption=data_in_dict_format["gas"])
-            
-            if ID not in self.__class__.DEVICE:
-                self.__class__.DEVICE[ID] = SensorDataController(ID)
-            
-            if self.__class__.QUEUE_OF_DATA_TO_BE_PROCESSED.qsize() == self.__class__.QUEUE_OF_DATA_TO_BE_PROCESSED.maxsize:
-                print("")
-            self.__class__.QUEUE_OF_DATA_TO_BE_PROCESSED.put(wv)
-            self._process_element_from_queue()
+        dict_["ID"] = self.make_valid_mac_address(dict_["ID"])
+        ID = dict_["ID"]
+        if ID not in self.__class__.DEVICE.keys():
+            self.__class__.DEVICE[ID] = SensorDataController(ID)
         
+        self.__class__.QUEUE_OF_DATA_TO_BE_PROCESSED.put(dict_)
+        self._process_element_from_queue()
 
-    def _does_data_match_pattern(self, data: Mapping):
-        options = {'time', 'ID', 'amperage', 'gas'}
-        for key in data.keys():
-            if not (key in options):
-                return False
-        return True
-            
-
+    @staticmethod
+    def make_valid_mac_address(mac_address: str) -> str:
+        BLACK_LIST_LETTER = '/:*?"<>|'
+        for letter in BLACK_LIST_LETTER:
+            mac_address = mac_address.replace(letter, "#")
+        return mac_address
 
    
 rw_device_manager = RWDeviceManager()
