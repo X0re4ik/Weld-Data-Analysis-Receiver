@@ -61,7 +61,6 @@ class WriterAtDailyReport(_WriterAtTable):
     def __init__(self) -> None:
         _WriterAtTable.__init__(self, DailyReport)
         
-          
     def send(self):
         super().send()
         existed, daily_report = WriterAtDailyReport.creat_if_not_exist(self.template["sensor_id"], self.template["date"])

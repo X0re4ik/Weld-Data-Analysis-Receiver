@@ -10,7 +10,6 @@ from receiver.rw_device_manager.Timer import Timer
 class SensorDataController:
     
     RECORDING_PERIOD_IN_DAILY_REPORT: int = 1000
-    RECORDING_PERIOD_IN_MEASUREMENT: int = 1000
     
     def __init__(self, ID: str) -> None:
         self.ID = ID
@@ -35,13 +34,31 @@ class SensorDataController:
         self.send_to_daily_report(welding_values)
         self.send_to_measurement(welding_values)
 
+from queue import Queue
+from multiprocessing import Process
 
 class RWDeviceManager:
     
     
     DEVICE = dict()
-
     
+    QUEUE_OF_DATA_TO_BE_PROCESSED = Queue(maxsize=30)
+    
+    
+    def _process_element_from_queue(self):
+        if self.__class__.QUEUE_OF_DATA_TO_BE_PROCESSED.empty(): return
+        
+        current_value = self.__class__.QUEUE_OF_DATA_TO_BE_PROCESSED.get()
+        
+        def treatment(welding_values: WeldingValues):
+            self.__class__.DEVICE[welding_values.ID].send_to(welding_values)
+            
+        proccess_1 = Process(target=treatment, kwargs={
+            "welding_values": current_value
+        }, daemon=True)
+        proccess_1.run()
+        
+
     def add(self, data_in_dict_format):
         
         if self._does_data_match_pattern(data_in_dict_format):
@@ -55,7 +72,10 @@ class RWDeviceManager:
             if ID not in self.__class__.DEVICE:
                 self.__class__.DEVICE[ID] = SensorDataController(ID)
             
-            self.__class__.DEVICE[ID].send_to(wv)
+            if self.__class__.QUEUE_OF_DATA_TO_BE_PROCESSED.qsize() == self.__class__.QUEUE_OF_DATA_TO_BE_PROCESSED.maxsize:
+                print("")
+            self.__class__.QUEUE_OF_DATA_TO_BE_PROCESSED.put(wv)
+            self._process_element_from_queue()
         
 
     def _does_data_match_pattern(self, data: Mapping):
