@@ -8,27 +8,6 @@ from receiver.rw_device_manager import rw_device_manager
 
 app = Flask(__name__)
 
-<<<<<<< HEAD
-import json
-
-@app.route('/write_values', methods=["POST"])
-def write_values():
-    if not request.is_json:
-        return {
-            "success": False
-        }
-
-    for i in json.loads(request.get_json()):
-        rw_device_manager.add(i)
-    
-    return {
-        "success": True
-    }
-
-
-
-
-=======
 @app.route('/write_values', methods=["POST"])
 def write_values():
     
@@ -45,4 +24,3 @@ def write_values():
     headers = Headers()
     headers.add('Content-Type', 'application/json')
     return Response(response, 200, headers)
->>>>>>> 07ca9bf (Исправлена проблема с многопоточной обработкой.)
