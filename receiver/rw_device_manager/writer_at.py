@@ -169,7 +169,7 @@ class WriterAtMeasurement(_WriterAtTable):
         
     def send(self):
         super().send()
-        if self.is_useful_data:
+        if "self.is_useful_data":
             measurement = Measurement(**self.template)
             session.begin()
             session.add(measurement)
