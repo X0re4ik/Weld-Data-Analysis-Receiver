@@ -85,6 +85,7 @@ class WriterAtDailyReport(_WriterAtTable):
         daily_report.worker_id = self.template["worker_id"]
         daily_report.running_time_in_seconds = self.template["running_time_in_seconds"]
         daily_report.idle_time_in_seconds = self.template["idle_time_in_seconds"]
+        daily_report.welding_gas_id = self.template["welding_gas_id"]
         
         session.begin()
         session.commit()
@@ -144,13 +145,14 @@ class WriterAtDailyReport(_WriterAtTable):
         
         if not daily_report:
             template = DailyReport.template()
-            template["sensor_id"] = sensor_id,
+            template["sensor_id"] = sensor_id
             template["date"] = date
+            
             new_daily_report = DailyReport(**template)
             session.begin()
             session.add(new_daily_report)
             session.commit()
-            return False, new_daily_report
+            return (False, new_daily_report)
         
         return True, daily_report
 

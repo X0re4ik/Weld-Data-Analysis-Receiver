@@ -23,8 +23,8 @@ class Sensor(Base):
     
     @staticmethod
     def template():
-        options = ["mac_address", "device_name", "location", "measurement_period", "begining_of_work_day", "end_of_working_day", "welding_wire_diameter_id", "weld_metal_id"]
-        values = [None , None, None, 1, 6, 18, 1, 1]
+        options = ["mac_address", "device_name", "location", "measurement_period", "begining_of_work_day", "end_of_working_day", "welding_wire_diameter_id", "weld_metal_id", "welding_gas_id"]
+        values = [None , None, None, 1, 6, 18, 1, 1, 1]
         return merge(options, values)
 
 class Worker(Base):
@@ -35,9 +35,6 @@ class Master(Base):
     
 class Welder(Base):
     __table__ = Table('welder', metadata, autoload=True)
-    
-class Admin(Base):
-    __table__ = Table('admin', metadata, autoload=True)
 
 class WeldingWireDiameter(Base):
     __table__ = Table('welding_wire_diameter', metadata, autoload=True)
@@ -67,13 +64,13 @@ class DailyReport(Base):
              "average_amperage", "average_gas_consumption", "average_wire_consumption", 
              "expended_wire", "expended_gas", 
              "max_amperage", "max_gas_consumption", "max_wire_consumption", 
-             "worker_id", "welding_wire_diameter_id", "weld_metal_id", 
+             "worker_id", "welding_wire_diameter_id", "weld_metal_id", "welding_gas_id",
              "running_time_in_seconds", "idle_time_in_seconds"], 
             [ None, None,
              0, 0, 0,
              0, 0,
              0, 0, 0,
-             None, 1, 1,
+             None, 1, 1, 1,
              0, 0
             ]
             )
