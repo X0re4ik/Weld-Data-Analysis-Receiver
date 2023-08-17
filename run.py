@@ -1,51 +1,52 @@
-import json
 import os
-import socket
+from dotenv import load_dotenv
 
-from dotenv import load_dotenv    
-from multiprocessing import Process
+DOTENV_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".web.env")
+if os.path.exists(DOTENV_PATH):
+    load_dotenv(DOTENV_PATH)
+else:
+    raise FileNotFoundError(f"""
+    Cруктура проекта должна быть следующая:
+        |-<папка web сервиса>
+            |-receiver
+            |-run.py
+        |-.env
+    
+    В данном приложении отсутсвует .env файл.
+    env файл содержит основные настройки web-приложения
+    Обязательные аргументы, входящте в env файл:
+    
+        #Секретный ключ Flask
+        FLASK_SECRET_KEY            = "..."
 
+        # Настройки приложения
+        APP_HOST                    = "..."
+        APP_PORT                    = "..."
+        APP_DEBUG                   = "..."
+
+        # Настройки базы данных
+        DATA_BASE_USERNAME          = "..."
+        DATA_BASE_PASSWORD          = "..."
+        DATA_BASE_HOST              = "..."
+        DATA_BASE_PORT              = "..."
+        DATA_BASE_NAME              = "..."
+
+        #Прочие настройки
+        PATH_TO_DB_WITH_FILES       = "..."
+
+    При запуске, приложение искало env в директории:
+        {DOTENV_PATH}
+    
+    Текщая директория:
+        {os.path.abspath(__file__)}
+""")
+
+from receiver.configs import RECEIVER_HOST, RECEIVER_PORT, RECEIVER_DEBUG
 from receiver import app
-from receiver.mqtt_manager.subscriber import MQTTSubscription
-from receiver.rw_device_manager import rw_device_manager
 
-
-class HTTPServerFastData():
-    def run(self) -> None:
-        app.run(
-            host=os.environ["HOST"] or socket.gethostname(),
-            port=int(os.environ["HTTP_PORT"]),
-            debug=(os.environ["DEBUG"] == '1'))
-    
-
-class MQTTServerFastData():
-    def run(self) -> None:
-        
-        def __callback(client, userdata, msg):
-            for i in json.loads(msg.payload.decode()):
-                rw_device_manager.add(i)
-        
-        broker      = os.environ["HOST"]
-        port        = int(os.environ["MQTT_PORT"])
-        username    = os.environ["MQTT_USERNAME"]
-        password    = os.environ["MQTT_PASSWORD"]
-        
-        
-        MQTTSubscription(
-            broker=broker, port=port, 
-            username=username, password=password, 
-            callback=__callback).subscribe(os.environ["MQTT_TOPIC"]).run()
-
- 
-    
-def _main():
-    if os.environ["USING_PROTOCOL"] == 'http':
-        HTTPServerFastData().run()
-    else:
-        MQTTServerFastData().run()
-
-
-load_dotenv(".env")
-
-if __name__ == "__main__":
-    _main()
+if __name__ == '__main__':
+    app.run(
+        host=RECEIVER_HOST,
+        port=RECEIVER_PORT,
+        debug=RECEIVER_DEBUG
+    )

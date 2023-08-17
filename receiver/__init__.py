@@ -7,19 +7,20 @@ from datetime import datetime
 
 from receiver.rw_device_manager import rw_device_manager
 from receiver.models import Sensor, session
+from receiver.configs import ( 
+    RECEIVER_USING_PROTOCOL, 
+    RECEIVER_USERNAME, RECEIVER_PASSWORD
+)
 
 app = Flask(__name__)
-
-
-
 
 class WriteValuesView(View):
     
     methods = ["POST"]
     
-    USE_LOGIN: bool = False
-    USERNAME: str = "username"
-    PASSWORD: str = "password"
+    USE_LOGIN: bool
+    USERNAME: str
+    PASSWORD: str
     
     def check_log_and_pass(self) -> bool:
         if not request.authorization: return False
@@ -56,7 +57,6 @@ class WriteValuesView(View):
         Returns:
             Response: результат обработки входных значений
         """
-        
         
         headers = Headers()
         headers.add('Content-Type', 'application/json')
@@ -121,3 +121,7 @@ app.add_url_rule(
     "/write_values",
     view_func=WriteValuesView.as_view("write-values")
 )
+
+WriteValuesView.USE_LOGIN   = RECEIVER_USING_PROTOCOL
+WriteValuesView.USERNAME    = RECEIVER_USERNAME
+WriteValuesView.PASSWORD    = RECEIVER_PASSWORD

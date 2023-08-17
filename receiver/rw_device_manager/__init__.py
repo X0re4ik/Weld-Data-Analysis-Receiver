@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import List, MutableSet, Mapping
-
+from typing import Dict, List
+from queue import Queue
+from threading import Thread
 
 from receiver.rw_device_manager.writer_at import WriterAtDailyReport, WriterAtMeasurement
 from receiver.rw_device_manager.WeldingValues import WeldingValues
 from receiver.rw_device_manager.Timer import Timer
-
 
 class SensorDataController:
     
@@ -34,33 +34,11 @@ class SensorDataController:
         self.send_to_daily_report(welding_values)
         self.send_to_measurement(welding_values)
 
-from queue import Queue
-from multiprocessing import Process
-from typing import Dict, List
-
-import functools
-
-def _does_dict_match_pattern(pattern):
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            dict_ = args[1]
-            for key in dict_.keys():
-                if not (key in pattern):
-                    raise RuntimeError(f"Словарь не соответсвует паттерну {pattern}. Неизвестный ключ: {key}")
-        return wrapper
-    return decorator
-
-from threading import Thread
-
 class RWDeviceManager:
     
     DEVICE: Dict[str, SensorDataController] = dict()
     
     QUEUE_OF_DATA_TO_BE_PROCESSED: Dict = Queue(maxsize=40)
-            
-    
-    
     
     def _process_element_from_queue(self):
         if self.__class__.QUEUE_OF_DATA_TO_BE_PROCESSED.empty(): return

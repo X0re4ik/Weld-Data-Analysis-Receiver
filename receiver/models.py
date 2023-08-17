@@ -8,8 +8,6 @@ from receiver.configs import DB_URI
 Base = declarative_base()
 engine = create_engine(DB_URI)
 metadata = MetaData(bind=engine)
-
-from sqlalchemy.orm import create_session
 session = create_session(bind=engine)
 
 

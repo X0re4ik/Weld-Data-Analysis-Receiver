@@ -1,13 +1,11 @@
-from receiver.models import session
-from receiver.models import (Sensor, DailyReport, WeldingWireDiameter, WeldMetal, Worker, Measurement)
-
-
+import math
 
 from abc import ABC, abstractmethod
 from typing import List, MutableSet, Mapping
 from datetime import datetime 
 
-import math
+from receiver.models import session
+from receiver.models import (Sensor, DailyReport, WeldingWireDiameter, WeldMetal, Worker, Measurement)
 
 
 class WeldingCalculator:
